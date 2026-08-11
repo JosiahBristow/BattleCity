@@ -17,7 +17,7 @@ html, body {
   -webkit-user-select: none;
 }
 
-/* --- Responsive canvas scaling ----------------------------- */
+/* --- Responsive canvas scaling (portrait) ------------------- */
 #main {
   width: 100% !important;
   height: auto !important;
@@ -217,6 +217,117 @@ body { margin-top: 0 !important; }
   color: #fff;
 }
 
+/* Active toggled states (RED screen / landscape) */
+#btn-red.active {
+  background: #8b0000;
+  border-color: #f33;
+  color: #ffd;
+}
+#btn-landscape.active {
+  background: #00622b;
+  border-color: #3f6;
+  color: #dff;
+}
+
+/* --- Landscape layout (forced via 横屏 button OR auto-rotation) --- */
+body.mobile-landscape #main,
+body.landscape #main {
+  height: 100vh !important;
+  justify-content: center;
+}
+
+body.mobile-landscape #main canvas,
+body.landscape #main canvas {
+  width: auto;
+  height: min(100vh, calc(100vw * 448 / 512));
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+body.mobile-landscape #mobile-overlay,
+body.landscape #mobile-overlay {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+}
+
+body.mobile-landscape #dpad-area,
+body.landscape #dpad-area {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding-left: 0;
+}
+
+body.mobile-landscape #btn-area,
+body.landscape #btn-area {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding-right: 0;
+  gap: 8px;
+}
+
+body.mobile-landscape #utility-bar,
+body.landscape #utility-bar {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 0;
+}
+
+body.mobile-landscape #dpad,
+body.landscape #dpad {
+  grid-template-columns: 44px 44px 44px;
+  grid-template-rows: 44px 44px 44px;
+}
+
+body.mobile-landscape .btn-a,
+body.landscape .btn-a { width: 56px; height: 56px; font-size: 14px; }
+
+body.mobile-landscape .btn-b,
+body.landscape .btn-b { width: 44px; height: 44px; font-size: 12px; }
+
+body.mobile-landscape .btn-select,
+body.landscape .btn-select,
+body.mobile-landscape .btn-start,
+body.landscape .btn-start { width: 44px; height: 20px; font-size: 7px; }
+
+body.mobile-landscape .util-btn,
+body.landscape .util-btn { font-size: 8px; padding: 3px 5px; min-width: 28px; }
+
+/* --- Fullscreen (F key fullscreens the canvas element) ----- */
+#main canvas:fullscreen,
+#main canvas:-webkit-full-screen,
+#main canvas:-moz-full-screen {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* --- Rotate hint overlay ----------------------------------- */
+#rotate-hint {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-family: prstart, zpix, monospace;
+  text-align: center;
+  z-index: 20000;
+  pointer-events: none;
+}
+#rotate-hint span { font-size: 16px; }
+#rotate-hint small { font-size: 10px; color: #aaa; margin-top: 12px; }
+
 /* --- Pixel scan-line effect (subtle) ----------------------- */
 #mobile-overlay::before {
   content: '';
@@ -231,26 +342,6 @@ body { margin-top: 0 !important; }
   );
   pointer-events: none;
   z-index: 10000;
-}
-
-/* --- Landscape adjustments --------------------------------- */
-@media (orientation: landscape) and (max-height: 500px) {
-  #main canvas {
-    max-height: 85vh;
-  }
-  #mobile-overlay {
-    height: auto;
-    min-height: 0;
-    flex-direction: row;
-    align-items: center;
-    padding: 4px 8px;
-  }
-  #dpad { grid-template-columns: 44px 44px 44px; grid-template-rows: 44px 44px 44px; }
-  .btn-a { width: 56px; height: 56px; font-size: 14px; }
-  .btn-b { width: 44px; height: 44px; font-size: 12px; }
-  .btn-select, .btn-start { width: 48px; height: 22px; font-size: 8px; }
-  #utility-bar { flex-wrap: nowrap; gap: 4px; }
-  .util-btn { font-size: 8px; padding: 2px 5px; min-width: 28px; }
 }
 
 /* --- Very small screens ------------------------------------- */

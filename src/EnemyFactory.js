@@ -104,6 +104,12 @@ EnemyFactory.prototype.createEnemy = function (type, position) {
     tank.setValue(400);
   }
   
+  if (Cheat.redScreen) {
+    tank.setNormalSpeed(tank.getNormalSpeed() + 2);
+    tank.setMoveFrequency(1);
+    tank.setBulletSpeed(Bullet.Speed.FAST);
+  }
+  
   if (arrayContains(this._flashingTanks, this._enemy + 1)) {
     tank.startFlashing();
   }

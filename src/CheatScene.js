@@ -11,12 +11,13 @@ function CheatScene(sceneManager) {
     {key: 'oneHitKill', name: 'ONE HIT KILL'},
     {key: 'maxPower', name: 'MAX POWER'},
     {key: 'fastSpeed', name: 'FAST SPEED'},
-    {key: 'invincibleBase', name: 'INVINCIBLE BASE'}
+    {key: 'invincibleBase', name: 'INVINCIBLE BASE'},
+    {key: 'redScreen', name: 'RED SCREEN'}
   ];
   this._current = 0;
   
   var self = this;
-  MenuMouseController.bindList(this, 100, 40, null, function (idx) {
+  MenuMouseController.bindList(this, 92, 36, null, function (idx) {
     self._current = idx;
     self.toggleCurrent();
   });
@@ -61,7 +62,7 @@ CheatScene.prototype.draw = function (ctx) {
   ctx.fillStyle = "#ffffff";
   
   for (var i = 0; i < this._options.length; ++i) {
-    var y = 100 + 40 * i;
+    var y = 92 + 36 * i;
     var option = this._options[i];
     var on = Cheat[option.key];
     ctx.fillText(Language.translate(option.name), 40, y);

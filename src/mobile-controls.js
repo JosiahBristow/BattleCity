@@ -135,6 +135,8 @@
         '<button class="util-btn" data-action="c" title="Cycle">C</button>' +
         '<button class="util-btn" data-action="tab" title="Tab">TAB</button>' +
         '<button class="util-btn" data-action="s" title="Save">S</button>' +
+        '<button class="util-btn" id="btn-red" title="Red Screen">RED</button>' +
+        '<button class="util-btn" id="btn-landscape" title="Landscape">横屏</button>' +
       '</div>';
 
     document.body.appendChild(overlay);
@@ -149,16 +151,74 @@
       bindButton(btn, action);
     });
 
+    var redBtn = document.getElementById('btn-red');
+    redBtn.addEventListener('click', function () {
+      Cheat.redScreen = !Cheat.redScreen;
+      if (Cheat.redScreen) {
+        redBtn.classList.add('active');
+      } else {
+        redBtn.classList.remove('active');
+      }
+    });
+
+    var landscapeBtn = document.getElementById('btn-landscape');
+    landscapeBtn.addEventListener('click', function () {
+      var on = !document.body.classList.contains('mobile-landscape');
+      setLandscape(on);
+    });
+
+    function setLandscape(on) {
+      document.body.classList.toggle('mobile-landscape', on);
+      if (on) {
+        landscapeBtn.classList.add('active');
+        landscapeBtn.textContent = '退出';
+      } else {
+        landscapeBtn.classList.remove('active');
+        landscapeBtn.textContent = '横屏';
+      }
+      updateRotateHint();
+    }
+
+    var rotateHint = null;
+    function updateRotateHint() {
+      var landscape = document.body.classList.contains('mobile-landscape');
+      var portrait = window.innerHeight > window.innerWidth;
+      if (landscape && portrait) {
+        if (!rotateHint) {
+          rotateHint = document.createElement('div');
+          rotateHint.id = 'rotate-hint';
+          rotateHint.innerHTML = '<span>请旋转至横屏</span><small>Rotate to Landscape</small>';
+          document.body.appendChild(rotateHint);
+        }
+        rotateHint.style.display = '';
+      }
+      else if (rotateHint) {
+        rotateHint.style.display = 'none';
+      }
+    }
+
+    function updateOrientationClass() {
+      if (window.innerWidth > window.innerHeight) {
+        document.body.classList.add('landscape');
+      } else {
+        document.body.classList.remove('landscape');
+      }
+      updateRotateHint();
+    }
+
+    updateOrientationClass();
+    window.addEventListener('resize', updateOrientationClass);
+    window.addEventListener('orientationchange', function () {
+      setTimeout(updateOrientationClass, 100);
+      setTimeout(releaseAll, 100);
+    });
+    window.addEventListener('blur', releaseAll);
+
     document.addEventListener('touchstart', function (e) {
       if (e.target === document.body || e.target === document.documentElement) {
         releaseAll();
       }
     }, { passive: true });
-
-    window.addEventListener('blur', releaseAll);
-    window.addEventListener('orientationchange', function () {
-      setTimeout(releaseAll, 100);
-    });
   }
 
   if (document.readyState === 'loading') {

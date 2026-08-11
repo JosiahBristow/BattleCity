@@ -31,4 +31,10 @@ Gamefield.prototype.draw = function (ctx) {
   ctx.fillRect(this._x, this._y, this._w, this._h);
         
   this._painter.draw(ctx);
+  
+  if (Cheat.redScreen) {
+    var pulse = 0.28 + 0.08 * Math.sin(Date.now() / 150);
+    ctx.fillStyle = "rgba(255, 0, 0, " + pulse + ")";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  }
 };

@@ -35,6 +35,7 @@ Language.translations = {
     'MAX POWER': '满级火力',
     'FAST SPEED': '快速移动',
     'INVINCIBLE BASE': '基地无敌',
+    'RED SCREEN': '红屏模式',
     'J TO TOGGLE': 'J 切换',
     'NO CUSTOM MAP': '暂无自定义地图',
     'J TO PLAY': 'J 选择',
