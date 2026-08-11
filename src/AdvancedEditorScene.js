@@ -248,20 +248,20 @@ AdvancedEditorScene.prototype._handlePanelClick = function (mx, my) {
   
   if (this._view == 'map') {
     // Item selection icons (click right-side icon to select)
-    // left column 16px wide, right column 16px wide (spawns)
+    // left column 32px wide, right column 32px wide (spawns)
     var items = [
-      {type: 'X', x: px + b, y: b, w: 16, h: 32},
-      {type: 'B', x: px + b, y: 2.5 * b, w: 16, h: 32},
-      {type: 'T', x: px + b, y: 4 * b, w: 16, h: 32},
-      {type: 'R', x: px + b, y: 5.5 * b, w: 16, h: 32},
-      {type: 'S', x: px + b, y: 7 * b, w: 16, h: 32},
-      {type: 'F', x: px + b, y: 8.5 * b, w: 16, h: 32},
-      {type: 'E', x: px + b, y: 10 * b, w: 16, h: 32},
-      {type: 'P1', x: px + 1.5 * b, y: b, w: 16, h: 16},
-      {type: 'P2', x: px + 1.5 * b, y: 2.5 * b, w: 16, h: 16},
-      {type: 'E1', x: px + 1.5 * b, y: 4 * b, w: 16, h: 16},
-      {type: 'E2', x: px + 1.5 * b, y: 5.5 * b, w: 16, h: 16},
-      {type: 'E3', x: px + 1.5 * b, y: 7 * b, w: 16, h: 16}
+      {type: 'X', x: px + b, y: b, w: 32, h: 32},
+      {type: 'B', x: px + b, y: 2.5 * b, w: 32, h: 32},
+      {type: 'T', x: px + b, y: 4 * b, w: 32, h: 32},
+      {type: 'R', x: px + b, y: 5.5 * b, w: 32, h: 32},
+      {type: 'S', x: px + b, y: 7 * b, w: 32, h: 32},
+      {type: 'F', x: px + b, y: 8.5 * b, w: 32, h: 32},
+      {type: 'E', x: px + b, y: 10 * b, w: 32, h: 32},
+      {type: 'P1', x: px + 2 * b, y: b, w: 32, h: 32},
+      {type: 'P2', x: px + 2 * b, y: 2.5 * b, w: 32, h: 32},
+      {type: 'E1', x: px + 2 * b, y: 4 * b, w: 32, h: 32},
+      {type: 'E2', x: px + 2 * b, y: 5.5 * b, w: 32, h: 32},
+      {type: 'E3', x: px + 2 * b, y: 7 * b, w: 32, h: 32}
     ];
     for (var i = 0; i < items.length; ++i) {
       if (this._pointIn(mx, my, items[i].x, items[i].y, items[i].w, items[i].h)) {
@@ -632,7 +632,7 @@ AdvancedEditorScene.prototype._drawToolsPanel = function (ctx) {
   ctx.drawImage(ImageManager.getImage('base'), px + b, 10 * b);
   
   // Item icons - right column (spawns)
-  var rx = px + 1.5 * b;
+  var rx = px + 2 * b;
   this._drawSpawn(ctx, rx, b, "1");
   this._drawSpawn(ctx, rx, 2.5 * b, "2");
   this._drawEnemySpawn(ctx, rx, 4 * b, "E1");
