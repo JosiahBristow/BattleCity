@@ -1,8 +1,7 @@
 (function () {
   'use strict';
 
-  var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    || ('ontouchstart' in window && window.innerWidth < 1024);
+  var isMobile = Globals.IS_TOUCH;
 
   if (!isMobile) return;
 
@@ -13,12 +12,12 @@
   document.head.appendChild(link);
 
   var KEY_MAP = {
-    up:    [38, 87],
-    down:  [40, 83],
-    left:  [37, 65],
-    right: [39, 68],
-    a:     [74, 32],
-    b:     [74, 32],
+    up:    [38],
+    down:  [40],
+    left:  [37],
+    right: [39],
+    a:     [74],
+    b:     [32],
     start: [13],
     select:[17],
     f:     [70],
@@ -82,34 +81,22 @@
   function bindDpadButton(el, action) {
     var codes = KEY_MAP[action];
     if (!codes) return;
-    var interval = null;
 
     el.addEventListener('touchstart', function (e) {
       e.preventDefault();
       e.stopPropagation();
       codes.forEach(keyDown);
-      interval = setInterval(function () {
-        codes.forEach(function (c) {
-          if (activeKeys[c]) keyUp(c);
-          keyDown(c);
-        });
-      }, 120);
     }, { passive: false });
-
-    function stop() {
-      if (interval) { clearInterval(interval); interval = null; }
-      codes.forEach(keyUp);
-    }
 
     el.addEventListener('touchend', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      stop();
+      codes.forEach(keyUp);
     }, { passive: false });
 
     el.addEventListener('touchcancel', function (e) {
       e.preventDefault();
-      stop();
+      codes.forEach(keyUp);
     }, { passive: false });
   }
 

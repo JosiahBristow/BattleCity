@@ -34,6 +34,15 @@ function Level(sceneManager, stageNumber, player, playerCount) {
     up: Keyboard.Key.W,
     down: Keyboard.Key.S
   };
+
+  if (Globals.IS_TOUCH) {
+    player1KeyMap = {
+      left: Keyboard.Key.LEFT,
+      right: Keyboard.Key.RIGHT,
+      up: Keyboard.Key.UP,
+      down: Keyboard.Key.DOWN
+    };
+  }
   
   new PlayerTankControllerFactory(this._eventManager, 1, player1KeyMap, Keyboard.Key.J);
   
