@@ -27,18 +27,24 @@ SettingsController.prototype.isFullscreen = function () {
 };
 
 SettingsController.prototype.requestFullscreen = function () {
-  var canvas = document.getElementById('canvas');
-  if (canvas.requestFullscreen) {
-    canvas.requestFullscreen();
+  var target = document.getElementById('canvas');
+  if (Globals.IS_TOUCH) {
+    var main = document.getElementById('main');
+    if (main) {
+      target = main;
+    }
   }
-  else if (canvas.webkitRequestFullscreen) {
-    canvas.webkitRequestFullscreen();
+  if (target.requestFullscreen) {
+    target.requestFullscreen();
   }
-  else if (canvas.mozRequestFullScreen) {
-    canvas.mozRequestFullScreen();
+  else if (target.webkitRequestFullscreen) {
+    target.webkitRequestFullscreen();
   }
-  else if (canvas.msRequestFullscreen) {
-    canvas.msRequestFullscreen();
+  else if (target.mozRequestFullScreen) {
+    target.mozRequestFullScreen();
+  }
+  else if (target.msRequestFullscreen) {
+    target.msRequestFullscreen();
   }
 };
 

@@ -139,7 +139,12 @@
         '<button class="util-btn" id="btn-landscape" title="Landscape">横屏</button>' +
       '</div>';
 
-    document.body.appendChild(overlay);
+    var main = document.getElementById('main');
+    if (main) {
+      main.appendChild(overlay);
+    } else {
+      document.body.appendChild(overlay);
+    }
 
     overlay.querySelectorAll('.dpad-btn[data-dir]').forEach(function (btn) {
       bindDpadButton(btn, btn.getAttribute('data-dir'));

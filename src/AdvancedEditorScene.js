@@ -159,11 +159,20 @@ AdvancedEditorScene.prototype._bindMouse = function () {
   });
 };
 
-AdvancedEditorScene.prototype._getCellFromEvent = function (e) {
+AdvancedEditorScene.prototype._getMousePos = function (e) {
   var rect = e.target.getBoundingClientRect();
-  var mx = e.clientX - rect.left;
-  var my = e.clientY - rect.top;
-  return this._cellFromPoint(mx, my);
+  var canvas = e.target;
+  var scaleX = canvas.width / rect.width;
+  var scaleY = canvas.height / rect.height;
+  return {
+    mx: (e.clientX - rect.left) * scaleX,
+    my: (e.clientY - rect.top) * scaleY
+  };
+};
+
+AdvancedEditorScene.prototype._getCellFromEvent = function (e) {
+  var pos = this._getMousePos(e);
+  return this._cellFromPoint(pos.mx, pos.my);
 };
 
 AdvancedEditorScene.prototype._cellFromPoint = function (mx, my) {
@@ -312,9 +321,9 @@ AdvancedEditorScene.prototype._prevBotType = function (type) {
 };
 
 AdvancedEditorScene.prototype._onMouseDown = function (e) {
-  var rect = e.target.getBoundingClientRect();
-  var mx = e.clientX - rect.left;
-  var my = e.clientY - rect.top;
+  var pos = this._getMousePos(e);
+  var mx = pos.mx;
+  var my = pos.my;
   if (this._handlePanelClick(mx, my)) {
     return;
   }
