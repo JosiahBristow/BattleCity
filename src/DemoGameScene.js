@@ -58,7 +58,7 @@ DemoGameScene.DEMO_MAP = (function () {
   return Editor.serializeGrid(grid);
 })();
 
-DemoGameScene.DEMO_DURATION = 3000;
+DemoGameScene.DEMO_DURATION = 1500;
 
 function DemoGameScene(sceneManager) {
   var self = this;
