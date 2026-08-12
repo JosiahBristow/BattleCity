@@ -41,4 +41,25 @@ describe("Event Manager", function () {
     expect(subscriber2.notify).toHaveBeenCalledWith(EVENT_1);
     expect(subscriber2.notify).toHaveBeenCalledWith(EVENT_2);
   });
+  
+  it("notifies remaining subscribers when one removes itself mid-dispatch", function () {
+    var EVENT_1 = {name: 'event_1'};
+    
+    var eventManager = new EventManager();
+    
+    var subscriber1 = jasmine.createSpyObj('subscriber', ['notify']);
+    var subscriber2 = jasmine.createSpyObj('subscriber', ['notify']);
+    
+    eventManager.addSubscriber(subscriber1, ['event_1']);
+    eventManager.addSubscriber(subscriber2, ['event_1']);
+    
+    subscriber1.notify.andCallFake(function () {
+      eventManager.removeSubscriber(subscriber1);
+    });
+    
+    eventManager.fireEvent(EVENT_1);
+    
+    expect(subscriber1.notify).toHaveBeenCalled();
+    expect(subscriber2.notify).toHaveBeenCalledWith(EVENT_1);
+  });
 });

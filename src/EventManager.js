@@ -27,7 +27,13 @@ EventManager.prototype.removeAllSubscribers = function () {
 
 EventManager.prototype.fireEvent = function (event) {
   var subscribers = this._subscribers[event.name];
-  for (var i in subscribers) {
-    subscribers[i].notify(event);
+  if (!subscribers) {
+    return;
+  }
+  // Dispatch from a snapshot: a subscriber that removes itself (or others)
+  // mid-dispatch must not cause the remaining subscribers to be skipped.
+  var snapshot = subscribers.slice();
+  for (var i = 0; i < snapshot.length; ++i) {
+    snapshot[i].notify(event);
   }
 };
