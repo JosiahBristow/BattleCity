@@ -11,7 +11,7 @@ function StageListScene(sceneManager) {
   this._previewSize = 13 * Globals.UNIT_SIZE * 0.25;
   this._len = this._previewSize + this._gap;
   this._rowHeight = 140;
-  this._btnB = 16;
+  this._btnB = Globals.UNIT_SIZE / 2;
   this._clickables = [];
   this._hover = null;
   
@@ -188,7 +188,18 @@ StageListScene.prototype._editStage = function (stage) {
     return;
   }
   MapStorage.selectByName(stage.name);
-  this._sceneManager.toAdvancedEditorScene();
+  this._sceneManager.toAdvancedEditorScene('toStageListScene');
+};
+
+StageListScene.prototype._renameStage = function (stage) {
+  if (!stage.custom) {
+    return;
+  }
+  var index = MapStorage.getIndexByName(stage.name);
+  if (index !== -1) {
+    MapStorage.select(index);
+    this._sceneManager.toMapRenameScene(index, 'toStageListScene');
+  }
 };
 
 StageListScene.prototype._deleteStage = function (stage) {
@@ -577,8 +588,7 @@ StageListScene.prototype._drawHeader = function (ctx) {
 StageListScene.prototype._drawGrid = function (ctx) {
   var stages = this._getPageStages();
   if (stages.length === 0) {
-    ctx.fillStyle = '#666666';
-    ctx.fillText(Language.translate('NO CUSTOM STAGE'), 0.5 * Globals.UNIT_SIZE, 3 * Globals.UNIT_SIZE);
+    EditorFont.draw(ctx, Language.translate('NO CUSTOM STAGE'), 0.5 * Globals.UNIT_SIZE, 3 * Globals.UNIT_SIZE, 2, '#666666');
     return;
   }
   
@@ -597,55 +607,46 @@ StageListScene.prototype._drawStage = function (ctx, stage, x, y) {
   this._drawPreview(ctx, stage, x, y, 0.25);
   
   // name
-  ctx.save();
-  ctx.translate(x, y + this._previewSize + 8);
-  ctx.scale(0.5, 0.5);
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = '#dd2664';
-  ctx.fillText(stage.name, 0, 0);
-  ctx.restore();
+  EditorFont.draw(ctx, stage.name, x, y, 1, '#dd2664');
   
   // buttons
-  ctx.save();
-  ctx.translate(x, y + this._previewSize + 16);
-  ctx.scale(0.5, 0.5);
-  
-  var p1Rect = EditorUI.drawTextButton(ctx, 0, 0, '\u2160', {spreadX: 4, spreadY: 2});
-  var p2Rect = EditorUI.drawTextButton(ctx, 1 * b, 0, '\u2161', {spreadX: 4, spreadY: 2});
-  var editRect = EditorUI.drawTextButton(ctx, 2 * b, 0, 'E', {spreadX: 4, spreadY: 2, disabled: !stage.custom});
+  var by = y + 112;
+  var btnOpts = {textScale: 1, spreadX: 4, spreadY: 2};
+  var p1Rect = EditorUI.drawTextButton(ctx, x, by, '\u2160', btnOpts);
+  var p2Rect = EditorUI.drawTextButton(ctx, x + 1 * b, by, '\u2161', btnOpts);
+  var aiRect = EditorUI.drawTextButton(ctx, x + 2 * b, by, 'AI', btnOpts);
+  var editRect = EditorUI.drawTextButton(ctx, x + 3 * b, by, 'E', {textScale: 1, spreadX: 4, spreadY: 2, disabled: !stage.custom});
+  var renameRect = null;
   var deleteRect = null;
   if (stage.custom) {
-    deleteRect = EditorUI.drawTextButton(ctx, 5 * b, 0, 'X', {spreadX: 4, spreadY: 2});
+    renameRect = EditorUI.drawTextButton(ctx, x + 4 * b, by, 'R', btnOpts);
+    deleteRect = EditorUI.drawTextButton(ctx, x + 5 * b, by, 'X', btnOpts);
   }
-  var downloadRect = EditorUI.drawTextButton(ctx, 6 * b, 0, '\u2193', {spreadX: 4, spreadY: 2});
+  var downloadRect = EditorUI.drawTextButton(ctx, x + 6 * b, by, '\u2193', btnOpts);
   
-  ctx.restore();
-  
-  // Convert scaled rects to screen coords for click detection
-  function scaled(rect) {
-    return {
-      x: x + rect.x * 0.5,
-      y: y + self._previewSize + 16 + rect.y * 0.5,
-      w: rect.w * 0.5,
-      h: rect.h * 0.5
-    };
-  }
-  
-  this._addClickable(scaled(p1Rect).x, scaled(p1Rect).y, scaled(p1Rect).w, scaled(p1Rect).h, function () {
+  this._addClickable(p1Rect.x, p1Rect.y, p1Rect.w, p1Rect.h, function () {
     self._playStage(stage, 1);
   });
-  this._addClickable(scaled(p2Rect).x, scaled(p2Rect).y, scaled(p2Rect).w, scaled(p2Rect).h, function () {
+  this._addClickable(p2Rect.x, p2Rect.y, p2Rect.w, p2Rect.h, function () {
     self._playStage(stage, 2);
   });
-  this._addClickable(scaled(editRect).x, scaled(editRect).y, scaled(editRect).w, scaled(editRect).h, function () {
+  this._addClickable(aiRect.x, aiRect.y, aiRect.w, aiRect.h, function () {
+    self._playStage(stage, 3);
+  });
+  this._addClickable(editRect.x, editRect.y, editRect.w, editRect.h, function () {
     self._editStage(stage);
   }, !stage.custom);
+  if (renameRect) {
+    this._addClickable(renameRect.x, renameRect.y, renameRect.w, renameRect.h, function () {
+      self._renameStage(stage);
+    });
+  }
   if (deleteRect) {
-    this._addClickable(scaled(deleteRect).x, scaled(deleteRect).y, scaled(deleteRect).w, scaled(deleteRect).h, function () {
+    this._addClickable(deleteRect.x, deleteRect.y, deleteRect.w, deleteRect.h, function () {
       self._deleteStage(stage);
     });
   }
-  this._addClickable(scaled(downloadRect).x, scaled(downloadRect).y, scaled(downloadRect).w, scaled(downloadRect).h, function () {
+  this._addClickable(downloadRect.x, downloadRect.y, downloadRect.w, downloadRect.h, function () {
     self._downloadStage(stage);
   });
 };
@@ -741,8 +742,7 @@ StageListScene.prototype._drawPagination = function (ctx) {
   ctx.translate(x0, y0);
   
   var prevRect = EditorUI.drawTextButton(ctx, 0, 0, '\u2190', {disabled: disabledPrev});
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(String(this._page), 1.25 * b, 12);
+  EditorFont.draw(ctx, String(this._page), 1.25 * b, 0, 2);
   var nextRect = EditorUI.drawTextButton(ctx, 2.5 * b, 0, '\u2192', {disabled: disabledNext});
   
   ctx.restore();
@@ -771,7 +771,7 @@ StageListScene.prototype._drawBottomButtons = function (ctx) {
   ctx.restore();
   
   this._addClickable(x0 + editorRect.x, y0 + editorRect.y, editorRect.w, editorRect.h, function () {
-    self._sceneManager.toAdvancedEditorScene();
+    self._sceneManager.toAdvancedEditorScene('toStageListScene');
   });
   this._addClickable(x0 + uploadRect.x, y0 + uploadRect.y, uploadRect.w, uploadRect.h, function () {
     StageListScene._uploadInput.click();
@@ -782,10 +782,6 @@ StageListScene.prototype._drawBottomButtons = function (ctx) {
 };
 
 StageListScene.prototype._drawHint = function (ctx) {
-  ctx.save();
-  ctx.translate(0.5 * Globals.UNIT_SIZE, 14.5 * Globals.UNIT_SIZE);
-  ctx.scale(0.5, 0.5);
   ctx.fillStyle = '#999999';
-  ctx.fillText(Language.translate('STAGE LIST HINT'), 0, 0);
-  ctx.restore();
+  EditorFont.draw(ctx, Language.translate('STAGE LIST HINT'), 0.5 * Globals.UNIT_SIZE, 14.5 * Globals.UNIT_SIZE, 1);
 };

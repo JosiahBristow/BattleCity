@@ -5,14 +5,10 @@ function MoreScene(sceneManager) {
   
   this._mainMenu = new MainMenu();
   var items = [];
-  if (MapStorage.hasMap()) {
-    items.push(new MapManageMenuItem(this._sceneManager));
-  }
   items.push(new StageSelectMenuItem(this._sceneManager));
   items.push(new StageListMenuItem(this._sceneManager));
   items.push(new MorePlayerAIMenuItem(this._sceneManager));
   items.push(new CheatMenuItem(this._sceneManager));
-  items.push(new EditorMenuItem(this._sceneManager));
   items.push(new HelpMenuItem(this._sceneManager));
   items.push(new BackMenuItem(this._sceneManager, 'toMainMenuScene'));
   this._mainMenu.setItems(items);

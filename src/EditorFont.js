@@ -52,6 +52,13 @@ EditorFont.chars = {
   '>': ['.#.....','..#....','...#...','....#..','...#...','..#....','.#.....','........'],
   '_': ['.......','.......','.......','.......','.......','.......','.......','#####..'],
   '%': ['##..#..','##..#..','...#...','..#....','.#.....','#..##..','#..##..','........'],
+  // roman numeral Ⅰ (input key is its toLowerCase form ⅰ = u2170)
+  'ⅰ': ['........','........','..##....','..##....','..##....','..##....','..##....','...##...'],
+  // roman numeral Ⅱ (input key is its toLowerCase form ⅱ = u2171)
+  'ⅱ': ['........','........','.##.##..','.##.##..','.##.##..','.##.##..','.##.##..','.##.##..'],
+  '←': ['........','...##...','..##....','.##.....','########','.##.....','..##....','...##...'],
+  '→': ['........','...##...','....##..','.....#..','########','.....#..','....##..','...##...'],
+  '↓': ['........','...##...','...##...','...##...','..##.##.','...##...','........','........'],
 };
 
 // Fallback for unknown chars
@@ -60,21 +67,61 @@ EditorFont.fallback = ['..##...','.#..#..','....#..','...#...','..#....','......
 EditorFont.draw = function (ctx, text, x, y, scale, color) {
   ctx.fillStyle = color || "#ffffff";
   var s = scale || 2;
-  var textLower = String(text).toLowerCase();
+  var str = String(text);
+  var textLower = str.toLowerCase();
+  var xCursor = x;
   for (var i = 0; i < textLower.length; ++i) {
     var c = textLower.charAt(i);
-    var glyph = EditorFont.chars[c] || EditorFont.fallback;
-    for (var row = 0; row < 8; ++row) {
-      for (var col = 0; col < 8; ++col) {
-        if (glyph[row].charAt(col) == '#') {
-          ctx.fillRect(x + (i * 8 + col) * s, y + row * s, s, s);
+    var glyph = EditorFont.chars[c];
+    if (glyph) {
+      for (var row = 0; row < 8; ++row) {
+        for (var col = 0; col < 8; ++col) {
+          if (glyph[row].charAt(col) == '#') {
+            ctx.fillRect(xCursor + col * s, y + row * s, s, s);
+          }
         }
       }
+      xCursor += 8 * s;
+    }
+    else {
+      xCursor += EditorFont._drawFallback(ctx, str.charAt(i), xCursor, y, s);
     }
   }
 };
 
-EditorFont.measure = function (text, scale) {
+// Draw a glyph missing from the bitmap charset with the pixel font.
+// Returns the advance width in px.
+EditorFont._drawFallback = function (ctx, ch, x, y, s) {
+  var savedFont = ctx.font;
+  var savedBaseline = ctx.textBaseline;
+  ctx.font = 'bold ' + (8 * s) + 'px prstart, zpix, "Microsoft YaHei", sans-serif';
+  ctx.textBaseline = 'top';
+  ctx.fillText(ch, x, y);
+  var w = ctx.measureText(ch).width;
+  ctx.font = savedFont;
+  ctx.textBaseline = savedBaseline;
+  return Math.max(w, 8 * s);
+};
+
+EditorFont.measure = function (ctx, text, scale) {
   var s = scale || 2;
-  return text.length * 8 * s;
+  var str = String(text);
+  var textLower = str.toLowerCase();
+  var total = 0;
+  for (var i = 0; i < textLower.length; ++i) {
+    var c = textLower.charAt(i);
+    if (EditorFont.chars[c]) {
+      total += 8 * s;
+    }
+    else if (ctx) {
+      var savedFont = ctx.font;
+      ctx.font = 'bold ' + (8 * s) + 'px prstart, zpix, "Microsoft YaHei", sans-serif';
+      total += Math.max(ctx.measureText(str.charAt(i)).width, 8 * s);
+      ctx.font = savedFont;
+    }
+    else {
+      total += 8 * s;
+    }
+  }
+  return total;
 };

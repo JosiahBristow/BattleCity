@@ -13,7 +13,7 @@ EditorUI.drawTextButton = function (ctx, x, y, content, options) {
   var textFill = o.textFill || "#ccc";
   var selectedTextFill = o.selectedTextFill || "#333";
   
-  var w = EditorFont.measure(content, textScale) + 2 * spreadX;
+  var w = EditorFont.measure(ctx, content, textScale) + 2 * spreadX;
   var h = 8 * textScale + 2 * spreadY;
   var bx = x - spreadX;
   var by = y - spreadY;
@@ -24,10 +24,12 @@ EditorUI.drawTextButton = function (ctx, x, y, content, options) {
   }
   ctx.fillRect(bx, by, w, h);
   
-  ctx.strokeStyle = stroke;
-  ctx.setLineDash && ctx.setLineDash([4, 4]);
-  ctx.strokeRect(bx, by, w, h);
-  ctx.setLineDash && ctx.setLineDash([]);
+  if (stroke && stroke != "none" && stroke != "transparent") {
+    ctx.strokeStyle = stroke;
+    ctx.setLineDash && ctx.setLineDash([4, 4]);
+    ctx.strokeRect(bx, by, w, h);
+    ctx.setLineDash && ctx.setLineDash([]);
+  }
   
   var fill = selected ? selectedTextFill : textFill;
   if (disabled) {

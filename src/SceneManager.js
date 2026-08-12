@@ -51,9 +51,9 @@ SceneManager.prototype.toMapManageScene = function () {
   this._scene = new MapManageScene(this);
 };
 
-SceneManager.prototype.toMapRenameScene = function (index) {
+SceneManager.prototype.toMapRenameScene = function (index, backMethod) {
   this._clearScene();
-  this._scene = new MapRenameScene(this, index);
+  this._scene = new MapRenameScene(this, index, backMethod);
 };
 
 SceneManager.prototype.toMyMapPlayerScene = function () {
@@ -91,9 +91,9 @@ SceneManager.prototype.toCheatScene = function () {
   this._scene = new CheatScene(this);
 };
 
-SceneManager.prototype.toAdvancedEditorScene = function () {
+SceneManager.prototype.toAdvancedEditorScene = function (backMethod) {
   this._clearScene();
-  this._scene = new AdvancedEditorScene(this);
+  this._scene = new AdvancedEditorScene(this, backMethod);
 };
 
 SceneManager.prototype.toStageStatisticsScene = function (stage, player, gameOver, player2) {

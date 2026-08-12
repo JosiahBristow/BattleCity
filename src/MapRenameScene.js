@@ -1,8 +1,9 @@
-function MapRenameScene(sceneManager, index) {
+function MapRenameScene(sceneManager, index, backMethod) {
   this._sceneManager = sceneManager;
   this._eventManager = this._sceneManager.getEventManager();
   this._eventManager.addSubscriber(this, [Keyboard.Event.KEY_PRESSED]);
   this._index = index;
+  this._backMethod = backMethod || 'toMapManageScene';
   
   var map = MapStorage.getMap(index);
   this._name = '';
@@ -44,10 +45,10 @@ MapRenameScene.prototype.keyPressed = function (key) {
   if (key == Keyboard.Key.START || key == Keyboard.Key.J) {
     var finalName = this._name || ('CUSTOM ' + (this._index + 1));
     MapStorage.rename(this._index, finalName);
-    this._sceneManager.toMapManageScene();
+    this._sceneManager[this._backMethod]();
   }
   else if (key == Keyboard.Key.ESC) {
-    this._sceneManager.toMapManageScene();
+    this._sceneManager[this._backMethod]();
   }
   else if (key == 8) { // backspace
     this._name = this._name.slice(0, this._name.length - 1);

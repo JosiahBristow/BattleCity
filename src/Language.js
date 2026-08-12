@@ -46,7 +46,7 @@ Language.translations = {
     'CUSTOM': '自定义',
     'UPLOAD': '上传',
     'NO CUSTOM STAGE': '暂无自定义关卡',
-    'STAGE LIST HINT': '本页面有点简陋，请保持耐心。',
+    'STAGE LIST HINT': 'Ⅰ: 单打  Ⅱ: 双打  AI: 与 AI 组队  E: 编辑  R: 重命名  X: 删除  ↓: 下载',
     'PREV': '上一关',
     'NEXT': '下一关',
     'J TO START': 'J 开始',

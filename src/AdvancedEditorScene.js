@@ -1,7 +1,8 @@
-function AdvancedEditorScene(sceneManager) {
+function AdvancedEditorScene(sceneManager, backMethod) {
   this._sceneManager = sceneManager;
   this._eventManager = this._sceneManager.getEventManager();
   this._eventManager.addSubscriber(this, [Keyboard.Event.KEY_PRESSED]);
+  this._backMethod = backMethod || 'toMoreScene';
   
   // fc93 layout uses logical 16px blocks, scaled x2 -> our canvas is 512x448
   // Field: 13x13 blocks of 32px at (0,0). Tools panel on right at x=416.
@@ -22,6 +23,10 @@ function AdvancedEditorScene(sceneManager) {
   this._steelHex = 0xf;
   this._t = -1; // hovered cell index
   this._pressed = false;
+  this._mouseX = -1;
+  this._mouseY = -1;
+  this._lastPaint = null; // last sub-tile painted, for drag de-dupe
+  this._subHover = null; // hovered 16px quadrant on the field {row, col, quad}
   
   // Keyboard cursor
   this._cursorRow = 6;
@@ -156,6 +161,9 @@ AdvancedEditorScene.prototype._bindMouse = function () {
   CanvasMouse.on('mouseleave', function () {
     self._pressed = false;
     self._t = -1;
+    self._mouseX = -1;
+    self._mouseY = -1;
+    self._subHover = null;
   });
 };
 
@@ -208,7 +216,7 @@ AdvancedEditorScene.prototype._handlePanelClick = function (mx, my) {
     return true;
   }
   if (this._pointIn(mx, my, 12 * b, this._fieldSize, 4 * b, b)) {
-    this._sceneManager.toMoreScene();
+    this._sceneManager[this._backMethod]();
     return true;
   }
   
@@ -218,6 +226,31 @@ AdvancedEditorScene.prototype._handlePanelClick = function (mx, my) {
     if (this._pointIn(mx, my, px + 2.25 * b - 8, 0.25 * b - 8, 48, 32)) {
       this._showHelp = !this._showHelp;
       return true;
+    }
+    // 'f' reset button (before item selection since it overlaps the spawn column)
+    if (this._itemType == 'B') {
+      if (this._pointIn(mx, my, px + 2.25 * b - 4, 2.75 * b - 4, 24, 24)) {
+        this._brickHex = 0xf;
+        return true;
+      }
+    }
+    else if (this._itemType == 'T') {
+      if (this._pointIn(mx, my, px + 2.25 * b - 4, 4.25 * b - 4, 24, 24)) {
+        this._steelHex = 0xf;
+        return true;
+      }
+    }
+    // Wall quadrant widget clicks (before item selection: the active wall
+    // tool's sample toggles its own quadrants instead of re-selecting).
+    if (this._itemType == 'B') {
+      if (this._toggleWidgetQuadrant(mx, my, 2.5 * b)) {
+        return true;
+      }
+    }
+    else if (this._itemType == 'T') {
+      if (this._toggleWidgetQuadrant(mx, my, 4 * b)) {
+        return true;
+      }
     }
   }
   
@@ -278,31 +311,26 @@ AdvancedEditorScene.prototype._handlePanelClick = function (mx, my) {
         return true;
       }
     }
-    
-    // Hex adjust buttons (brick / steel quadrants)
-    if (this._itemType == 'B') {
-      var bits = [0b0001, 0b0010, 0b0100, 0b1000];
-      for (var i = 0; i < 4; ++i) {
-        var bin = bits[i];
-        var bx = px + b + (bin & 0b1010 ? 0.5 * b : 0);
-        var by = 2.5 * b + (bin & 0b1100 ? 0.5 * b : 0);
-        if (this._pointIn(mx, my, bx, by, 16, 16)) {
-          this._brickHex ^= bin;
-          return true;
-        }
+  }
+  return false;
+};
+
+// Toggle one 16px quadrant of the active wall tool's 2x2 sample widget.
+// The widget sits at (px + b, wY). Returns true when the click landed on it.
+AdvancedEditorScene.prototype._toggleWidgetQuadrant = function (mx, my, wY) {
+  var x = this._fieldSize + this._block;
+  var bits = [0b0001, 0b0010, 0b0100, 0b1000];
+  for (var i = 0; i < 4; ++i) {
+    var sx = x + (i % 2) * Globals.TILE_SIZE;
+    var sy = wY + Math.floor(i / 2) * Globals.TILE_SIZE;
+    if (this._pointIn(mx, my, sx, sy, Globals.TILE_SIZE, Globals.TILE_SIZE)) {
+      if (this._itemType == 'B') {
+        this._brickHex ^= bits[i];
       }
-    }
-    else if (this._itemType == 'T') {
-      var bits2 = [0b0001, 0b0010, 0b0100, 0b1000];
-      for (var i = 0; i < 4; ++i) {
-        var bin = bits2[i];
-        var bx = px + b + (bin & 0b1010 ? 0.5 * b : 0);
-        var by = 4 * b + (bin & 0b1100 ? 0.5 * b : 0);
-        if (this._pointIn(mx, my, bx, by, 16, 16)) {
-          this._steelHex ^= bin;
-          return true;
-        }
+      else {
+        this._steelHex ^= bits[i];
       }
+      return true;
     }
   }
   return false;
@@ -324,25 +352,34 @@ AdvancedEditorScene.prototype._onMouseDown = function (e) {
   var pos = this._getMousePos(e);
   var mx = pos.mx;
   var my = pos.my;
+  this._mouseX = mx;
+  this._mouseY = my;
   if (this._handlePanelClick(mx, my)) {
     return;
   }
   var t = this._cellFromPoint(mx, my);
   if (this._view == 'map' && t != -1) {
     this._pressed = true;
-    this._paint(t);
+    this._lastPaint = null;
+    this._paintAt(mx, my, t);
     this._cursorRow = Math.floor(t / 13);
     this._cursorCol = t % 13;
   }
 };
 
 AdvancedEditorScene.prototype._onMouseMove = function (e) {
-  var t = this._getCellFromEvent(e);
+  var pos = this._getMousePos(e);
+  var mx = pos.mx;
+  var my = pos.my;
+  this._mouseX = mx;
+  this._mouseY = my;
+  var t = this._cellFromPoint(mx, my);
   if (t != this._t) {
     this._t = t;
   }
+  this._subHover = this._hoveredSubTile(mx, my, t);
   if (this._view == 'map' && this._pressed && t != -1) {
-    this._paint(t);
+    this._paintAt(mx, my, t);
     this._cursorRow = Math.floor(t / 13);
     this._cursorCol = t % 13;
   }
@@ -352,10 +389,85 @@ AdvancedEditorScene.prototype._onMouseUp = function (e) {
   this._pressed = false;
   var t = this._getCellFromEvent(e);
   if (this._view == 'map' && t != -1) {
-    this._paint(t);
     this._cursorRow = Math.floor(t / 13);
     this._cursorCol = t % 13;
   }
+};
+
+// Paint the cell under the mouse. Wall tools (B/T) paint at 16px sub-tile
+// granularity so a quadrant can be toggled on/off directly; everything else
+// stamps the whole 32px cell.
+AdvancedEditorScene.prototype._paintAt = function (mx, my, t) {
+  if (this._itemType == 'B' || this._itemType == 'T') {
+    this._applySubPaint(t, this._quadrantBit(mx, my, t));
+  }
+  else {
+    this._paint(t);
+  }
+};
+
+// Toggle a single 16px quadrant of a wall cell. Empty cells receive the
+// template hex (brickHex/steelHex); existing walls toggle the quadrant under
+// the cursor and collapse to CLEAR when the last quadrant is removed.
+// _lastPaint de-dupes drags so a held click does not re-toggle.
+AdvancedEditorScene.prototype._applySubPaint = function (t, bit) {
+  var row = Math.floor(t / 13);
+  var col = t % 13;
+  var cell = this._grid[row][col];
+  var type = this._itemType == 'B' ? Editor.Structure.BRICK : Editor.Structure.STEEL;
+  var template = this._itemType == 'B' ? this._brickHex : this._steelHex;
+
+  if (this._lastPaint && this._lastPaint.row == row && this._lastPaint.col == col &&
+      (this._lastPaint.kind == 'stamp' || this._lastPaint.bit == bit)) {
+    return;
+  }
+
+  if (cell.type == type) {
+    var hex = cell.hex ^ bit;
+    this._grid[row][col] = hex == 0 ?
+      {type: Editor.Structure.CLEAR, hex: 0} :
+      {type: type, hex: hex};
+    this._lastPaint = {row: row, col: col, bit: bit, kind: 'toggle'};
+  }
+  else {
+    this._grid[row][col] = {type: type, hex: template};
+    this._lastPaint = {row: row, col: col, bit: bit, kind: 'stamp'};
+  }
+};
+
+// Bit (0b0001..0b1000) of the 16px quadrant under (mx, my) inside cell t.
+AdvancedEditorScene.prototype._quadrantBit = function (mx, my, t) {
+  var row = Math.floor(t / 13);
+  var col = t % 13;
+  var quad = this._subQuadIndex(mx, my, row, col);
+  return [0b0001, 0b0010, 0b0100, 0b1000][quad];
+};
+
+// Quadrant index 0..3 (row-major) of a point inside a 32px cell.
+AdvancedEditorScene.prototype._subQuadIndex = function (mx, my, row, col) {
+  var subCol = Math.floor((mx - col * this._block) / Globals.TILE_SIZE);
+  var subRow = Math.floor((my - row * this._block) / Globals.TILE_SIZE);
+  if (subCol < 0) subCol = 0;
+  if (subCol > 1) subCol = 1;
+  if (subRow < 0) subRow = 0;
+  if (subRow > 1) subRow = 1;
+  return subRow * 2 + subCol;
+};
+
+// Hovered wall sub-quadrant on the field, when a wall tool is active.
+AdvancedEditorScene.prototype._hoveredSubTile = function (mx, my, t) {
+  if (this._view != 'map' || t == -1) {
+    return null;
+  }
+  if (this._itemType != 'B' && this._itemType != 'T') {
+    return null;
+  }
+  if (mx >= this._fieldSize || my >= this._fieldSize) {
+    return null;
+  }
+  var row = Math.floor(t / 13);
+  var col = t % 13;
+  return {row: row, col: col, quad: this._subQuadIndex(mx, my, row, col)};
 };
 
 AdvancedEditorScene.prototype._paint = function (t) {
@@ -558,6 +670,15 @@ AdvancedEditorScene.prototype._drawMapGrid = function (ctx) {
   if (hover) {
     EditorUI.drawHoverCell(ctx, x0, y0, hover.col, hover.row, b);
   }
+  // Wall tools highlight the hovered 16px quadrant instead of the whole cell
+  if (this._subHover && (this._itemType == 'B' || this._itemType == 'T')) {
+    var sh = this._subHover;
+    var sx = x0 + sh.col * b + (sh.quad % 2) * Globals.TILE_SIZE;
+    var sy = y0 + sh.row * b + Math.floor(sh.quad / 2) * Globals.TILE_SIZE;
+    ctx.strokeStyle = "#e91e63";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(sx, sy, Globals.TILE_SIZE, Globals.TILE_SIZE);
+  }
   // Always show keyboard cursor
   EditorUI.drawHoverCell(ctx, x0, y0, this._cursorCol, this._cursorRow, b);
 };
@@ -621,16 +742,12 @@ AdvancedEditorScene.prototype._drawToolsPanel = function (ctx) {
     P1: b, P2: 2.5 * b, E1: 4 * b, E2: 5.5 * b, E3: 7 * b
   };
   var arrowCol = (this._itemType == 'P1' || this._itemType == 'P2' || this._itemType == 'E1' || this._itemType == 'E2' || this._itemType == 'E3') ? 1.5 : 0.25;
-  ctx.fillStyle = "#E91E63";
-  EditorFont.draw(ctx, '>', px + arrowCol * b, posMap[this._itemType], 2, "#E91E63");
+  EditorFont.draw(ctx, '\u2192', px + arrowCol * b, 0.25 * b + posMap[this._itemType], 2, "#E91E63");
   
   // Item icons - left column (terrain/walls)
   ctx.fillStyle = "#000000";
   ctx.fillRect(px + b, b, b, b);
-  // Brick sample
-  this._drawHexIcon(ctx, 'wall_brick', px + b, 2.5 * b, this._brickHex);
-  // Steel sample
-  this._drawHexIcon(ctx, 'wall_steel', px + b, 4 * b, this._steelHex);
+  // Brick / steel samples are drawn by _drawHexAdjustButtons below.
   // Water
   ctx.drawImage(ImageManager.getImage('water_1'), px + b, 5.5 * b);
   // Snow
@@ -676,34 +793,68 @@ AdvancedEditorScene.prototype._drawEnemySpawn = function (ctx, x, y, label) {
   EditorFont.draw(ctx, label, x + 6, y + 8, 2, "#000000");
 };
 
-AdvancedEditorScene.prototype._drawHexIcon = function (ctx, image, x, y, hex) {
-  var s = 16;
-  this._drawWall(ctx, image, hex, x, y);
+// 2x2 wall quadrant widgets on the tools panel. Lit quadrants render the
+// real wall texture, unset quadrants render as dark empty cells. The widget
+// for the active wall tool is interactive (hover highlight + 'f' reset).
+AdvancedEditorScene.prototype._drawHexAdjustButtons = function (ctx, px, b) {
+  var widgets = [
+    {key: 'B', image: 'wall_brick', y: 2.5 * b, hex: this._brickHex},
+    {key: 'T', image: 'wall_steel', y: 4 * b, hex: this._steelHex}
+  ];
+  for (var i = 0; i < widgets.length; ++i) {
+    var w = widgets[i];
+    var active = this._itemType == w.key;
+    this._drawWallWidget(ctx, px + b, w.y, w.image, w.hex, active);
+    if (active) {
+      EditorUI.drawTextButton(ctx, px + 2.25 * b, w.y + 0.25 * b, 'f', {spreadX: 4});
+    }
+  }
 };
 
-AdvancedEditorScene.prototype._drawHexAdjustButtons = function (ctx, px, b) {
-  if (this._itemType == 'B') {
-    var bits = [0b0001, 0b0010, 0b0100, 0b1000];
-    for (var i = 0; i < 4; ++i) {
-      var bin = bits[i];
-      var bx = px + b + (bin & 0b1010 ? 0.5 * b : 0);
-      var by = 2.5 * b + (bin & 0b1100 ? 0.5 * b : 0);
-      ctx.fillStyle = (this._brickHex & bin) ? "#cccccc" : "#333333";
-      ctx.fillRect(bx, by, 16, 16);
+// Draw one 2x2 wall sample (the icon + the quadrant toggle widget).
+AdvancedEditorScene.prototype._drawWallWidget = function (ctx, x, y, image, hex, active) {
+  var bits = [0b0001, 0b0010, 0b0100, 0b1000];
+  for (var i = 0; i < 4; ++i) {
+    var sx = x + (i % 2) * Globals.TILE_SIZE;
+    var sy = y + Math.floor(i / 2) * Globals.TILE_SIZE;
+    if (hex & bits[i]) {
+      ctx.drawImage(ImageManager.getImage(image), sx, sy);
     }
-    EditorFont.draw(ctx, 'f', px + 2.25 * b, 2.75 * b, 2, "#ffffff");
-  }
-  else if (this._itemType == 'T') {
-    var bits2 = [0b0001, 0b0010, 0b0100, 0b1000];
-    for (var i = 0; i < 4; ++i) {
-      var bin = bits2[i];
-      var bx = px + b + (bin & 0b1010 ? 0.5 * b : 0);
-      var by = 4 * b + (bin & 0b1100 ? 0.5 * b : 0);
-      ctx.fillStyle = (this._steelHex & bin) ? "#cccccc" : "#333333";
-      ctx.fillRect(bx, by, 16, 16);
+    else {
+      ctx.fillStyle = "#141414";
+      ctx.fillRect(sx, sy, Globals.TILE_SIZE, Globals.TILE_SIZE);
+      ctx.strokeStyle = "rgba(255,255,255,0.15)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx, sy, Globals.TILE_SIZE, Globals.TILE_SIZE);
     }
-    EditorFont.draw(ctx, 'f', px + 2.25 * b, 4.25 * b, 2, "#ffffff");
+    if (active && this._widgetHover(i, x, y)) {
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.fillRect(sx, sy, Globals.TILE_SIZE, Globals.TILE_SIZE);
+    }
   }
+  if (active) {
+    ctx.strokeStyle = "#e91e63";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 1, y - 1, Globals.UNIT_SIZE + 2, Globals.UNIT_SIZE + 2);
+  }
+};
+
+// True when the mouse is over quadrant i of a 2x2 widget at (x, y).
+AdvancedEditorScene.prototype._widgetHover = function (i, x, y) {
+  if (this._mouseX == -1 || this._mouseY == -1) {
+    return false;
+  }
+  if (this._mouseX < x || this._mouseX > x + Globals.UNIT_SIZE ||
+      this._mouseY < y || this._mouseY > y + Globals.UNIT_SIZE) {
+    return false;
+  }
+  var col = Math.floor((this._mouseX - x) / Globals.TILE_SIZE);
+  var row = Math.floor((this._mouseY - y) / Globals.TILE_SIZE);
+  if (col < 0) col = 0;
+  if (col > 1) col = 1;
+  if (row < 0) row = 0;
+  if (row > 1) row = 1;
+  return row * 2 + col == i;
 };
 
 AdvancedEditorScene.prototype._drawBottomMenu = function (ctx) {
@@ -721,6 +872,8 @@ AdvancedEditorScene.prototype._drawBottomMenu = function (ctx) {
 
 AdvancedEditorScene.prototype._drawConfigView = function (ctx) {
   var b = this._block;
+  
+  EditorUI.drawGridLines(ctx, 0, 0, b, null);
   
   ctx.fillStyle = "#ffffff";
   EditorFont.draw(ctx, 'name:', 3.5 * b, 1 * b, 2, "#ccc");
@@ -750,11 +903,11 @@ AdvancedEditorScene.prototype._drawConfigView = function (ctx) {
   var bx = 6 * b;
   for (var i = 0; i < this._bots.length; ++i) {
     var by = 4 * b + 1.5 * b * i;
-    EditorUI.drawTextButton(ctx, bx + 0.25 * b, by + 0.25 * b, '<', {
+    EditorUI.drawTextButton(ctx, bx + 0.25 * b, by + 0.25 * b, '\u2190', {
       spreadX: 2, spreadY: 2, disabled: this._bots[i].type == Tank.Type.BASIC
     });
     ctx.drawImage(ImageManager.getImage(tankImages[i]), bx + b, by);
-    EditorUI.drawTextButton(ctx, bx + 2.25 * b, by + 0.25 * b, '>', {
+    EditorUI.drawTextButton(ctx, bx + 2.25 * b, by + 0.25 * b, '\u2192', {
       spreadX: 2, spreadY: 2, disabled: this._bots[i].type == Tank.Type.ARMOR
     });
     EditorUI.drawTextButton(ctx, bx + 3.75 * b, by + 0.25 * b, '-', {
@@ -796,7 +949,7 @@ AdvancedEditorScene.prototype._mapKeyPressed = function (key) {
     this._view = 'config';
   }
   else if (key == Keyboard.Key.ESC) {
-    this._sceneManager.toMoreScene();
+    this._sceneManager[this._backMethod]();
   }
   else if (key == Keyboard.Key.N) {
     this._newMap();
@@ -869,7 +1022,7 @@ AdvancedEditorScene.prototype._configKeyPressed = function (key) {
     this._view = 'map';
   }
   else if (key == Keyboard.Key.ESC) {
-    this._sceneManager.toMoreScene();
+    this._sceneManager[this._backMethod]();
   }
   else if (key == Keyboard.Key.UP || key == Keyboard.Key.W) {
     this._botIndex = Math.max(0, this._botIndex - 1);
