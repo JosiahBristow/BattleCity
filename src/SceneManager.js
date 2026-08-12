@@ -106,6 +106,11 @@ SceneManager.prototype.toGameOverScene = function () {
   this._scene = new GameOverScene(this);
 };
 
+SceneManager.prototype.toDemoScene = function () {
+  this._clearScene();
+  this._scene = new DemoGameScene(this);
+};
+
 SceneManager.prototype.update = function () {
   this._scene.update();
 };

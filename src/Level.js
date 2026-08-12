@@ -1,15 +1,22 @@
-function Level(sceneManager, stageNumber, player, playerCount, stageConfig) {
+function Level(sceneManager, stageNumber, player, playerCount, stageConfig, demo) {
   Gamefield.call(this, sceneManager);
   
   var self = this;
+  this._demo = demo || false;
   
-  this._eventManager.addSubscriber(this, [
-    BaseExplosion.Event.DESTROYED,
-    Player.Event.OUT_OF_LIVES,
-    EnemyFactory.Event.LAST_ENEMY_DESTROYED,
-    Pause.Event.QUIT,
-    Tank.Event.CREATED
-  ]);
+  if (this._demo) {
+    this._eventManager.addSubscriber(this, [
+      Tank.Event.CREATED
+    ]);
+  } else {
+    this._eventManager.addSubscriber(this, [
+      BaseExplosion.Event.DESTROYED,
+      Player.Event.OUT_OF_LIVES,
+      EnemyFactory.Event.LAST_ENEMY_DESTROYED,
+      Pause.Event.QUIT,
+      Tank.Event.CREATED
+    ]);
+  }
   
   this._visible = false;
   this._stage = stageNumber;
@@ -48,7 +55,11 @@ function Level(sceneManager, stageNumber, player, playerCount, stageConfig) {
     };
   }
   
-  new PlayerTankControllerFactory(this._eventManager, 1, player1KeyMap, Keyboard.Key.J);
+  if (this._demo) {
+    new DemoTankControllerFactory(this._eventManager);
+  } else {
+    new PlayerTankControllerFactory(this._eventManager, 1, player1KeyMap, Keyboard.Key.J);
+  }
   
   var p1Spawn = this._parseSpawn(customMap, 'Player1');
   var p2Spawn = this._parseSpawn(customMap, 'Player2');
@@ -121,29 +132,39 @@ function Level(sceneManager, stageNumber, player, playerCount, stageConfig) {
   
   this._pause = new Pause(this._eventManager);
   
-  this._player = player === undefined ? new Player(1) : player;
-  this._player.setEventManager(this._eventManager);
-  
-  this._player2 = null;
-  if (this._playerCount == 2 || this._playerCount == 3) {
-    this._player2 = new Player(2);
-    this._player2.setEventManager(this._eventManager);
+  if (this._demo) {
+    this._player = null;
+    this._player2 = null;
+    this._livesView = null;
+    this._gameOverScript = new Script();
+    this._gameOverScript.setActive(false);
+    this._levelTransitionScript = new Script();
+    this._levelTransitionScript.setActive(false);
+  } else {
+    this._player = player === undefined ? new Player(1) : player;
+    this._player.setEventManager(this._eventManager);
+    
+    this._player2 = null;
+    if (this._playerCount == 2 || this._playerCount == 3) {
+      this._player2 = new Player(2);
+      this._player2.setEventManager(this._eventManager);
+    }
+    
+    this._livesView = new LivesView(this._player, this._player2);
+    
+    this._gameOverMessage = new GameOverMessage();
+    
+    this._gameOverScript = new Script();
+    this._gameOverScript.setActive(false);
+    this._gameOverScript.enqueue(new MoveFn(this._gameOverMessage, 'y', 213, 100, this._gameOverScript));
+    this._gameOverScript.enqueue(new Delay(this._gameOverScript, 50));
+    this._gameOverScript.enqueue({execute: function () { sceneManager.toStageStatisticsScene(stageNumber, self._player, true, self._player2); }});
+    
+    this._levelTransitionScript = new Script();
+    this._levelTransitionScript.setActive(false);
+    this._levelTransitionScript.enqueue(new Delay(this._levelTransitionScript, 200));
+    this._levelTransitionScript.enqueue({execute: function () { sceneManager.toStageStatisticsScene(stageNumber, self._player, false, self._player2); }});
   }
-  
-  this._livesView = new LivesView(this._player, this._player2);
-  
-  this._gameOverMessage = new GameOverMessage();
-  
-  this._gameOverScript = new Script();
-  this._gameOverScript.setActive(false);
-  this._gameOverScript.enqueue(new MoveFn(this._gameOverMessage, 'y', 213, 100, this._gameOverScript));
-  this._gameOverScript.enqueue(new Delay(this._gameOverScript, 50));
-  this._gameOverScript.enqueue({execute: function () { sceneManager.toStageStatisticsScene(stageNumber, self._player, true, self._player2); }});
-  
-  this._levelTransitionScript = new Script();
-  this._levelTransitionScript.setActive(false);
-  this._levelTransitionScript.enqueue(new Delay(this._levelTransitionScript, 200));
-  this._levelTransitionScript.enqueue({execute: function () { sceneManager.toStageStatisticsScene(stageNumber, self._player, false, self._player2); }});
   
   this._loadStage(this._stage);
 }
@@ -168,9 +189,13 @@ Level.prototype.draw = function (ctx) {
   Gamefield.prototype.draw.call(this, ctx);
   this._enemyFactoryView.draw(ctx);
   this._pause.draw(ctx);
-  this._livesView.draw(ctx);
+  if (this._livesView) {
+    this._livesView.draw(ctx);
+  }
   this._drawFlag(ctx);
-  this._gameOverMessage.draw(ctx);
+  if (this._gameOverMessage) {
+    this._gameOverMessage.draw(ctx);
+  }
 };
 
 Level.prototype.show = function () {

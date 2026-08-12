@@ -5,6 +5,8 @@ function MainMenuScene(sceneManager) {
   
   this._y = Globals.CANVAS_HEIGHT;
   this._speed = 3;
+  this._idleTimer = 0;
+  this._idleDelay = 600;
   
   this._mainMenu = new MainMenu();
   var items = [
@@ -42,6 +44,7 @@ MainMenuScene.prototype._onMouseMove = function (e) {
   if (idx != -1) {
     this._mainMenu.setItem(idx);
   }
+  this._resetIdleTimer();
 };
 
 MainMenuScene.prototype._onMouseClick = function (e) {
@@ -53,6 +56,7 @@ MainMenuScene.prototype._onMouseClick = function (e) {
     this._mainMenu.setItem(idx);
     this._mainMenu.executeCurrentItem();
   }
+  this._resetIdleTimer();
 };
 
 MainMenuScene.prototype.setY = function (y) {
@@ -86,6 +90,12 @@ MainMenuScene.prototype.arrived = function () {
 MainMenuScene.prototype.update = function () {
   this.updatePosition();
   this._cursor.update();
+  if (this._y == 0) {
+    this._idleTimer++;
+    if (this._idleTimer >= this._idleDelay) {
+      this._sceneManager.toDemoScene();
+    }
+  }
 };
 
 MainMenuScene.prototype.draw = function (ctx) {
@@ -118,6 +128,7 @@ MainMenuScene.prototype.keyPressed = function (key) {
   if (key == Keyboard.Key.START || key == Keyboard.Key.SELECT || key == Keyboard.Key.UP || key == Keyboard.Key.DOWN || key == Keyboard.Key.W || key == Keyboard.Key.S || key == Keyboard.Key.J) {
     this.arrived();
   }
+  this._resetIdleTimer();
 };
 
 MainMenuScene.prototype.setCursor = function (cursor) {
@@ -135,4 +146,8 @@ MainMenuScene.prototype.nextMenuItem = function () {
 MainMenuScene.prototype._clearCanvas = function (ctx) {
   ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+};
+
+MainMenuScene.prototype._resetIdleTimer = function () {
+  this._idleTimer = 0;
 };
