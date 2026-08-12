@@ -17,7 +17,10 @@ function Level(sceneManager, stageNumber, player, playerCount, stageConfig) {
   this._playerCount = playerCount || 1;
   
   var customMap = null;
-  if (stageNumber == 1 && MapStorage.usingCustomMap) {
+  if (this._stageConfig && this._stageConfig.map) {
+    customMap = this._stageConfig.map;
+  }
+  else if (stageNumber == 1 && MapStorage.usingCustomMap) {
     customMap = MapStorage.load();
   }
   this._enemySpawns = this._parseEnemySpawns(customMap);
