@@ -38,3 +38,19 @@ StageStatisticsPoints.prototype.draw = function (ctx, x, y) {
 StageStatisticsPoints.prototype.show = function () {
   this._visible = true;
 };
+
+StageStatisticsPoints.prototype.getCount = function () {
+  return this._count;
+};
+
+StageStatisticsPoints.prototype.getValue = function () {
+  return this._value;
+};
+
+StageStatisticsPoints.prototype.getCounter = function () {
+  return this._counter;
+};
+
+StageStatisticsPoints.prototype.setCounter = function (counter) {
+  this._counter = counter;
+};

@@ -1,4 +1,4 @@
-function Level(sceneManager, stageNumber, player, playerCount) {
+function Level(sceneManager, stageNumber, player, playerCount, stageConfig) {
   Gamefield.call(this, sceneManager);
   
   var self = this;
@@ -13,6 +13,7 @@ function Level(sceneManager, stageNumber, player, playerCount) {
   
   this._visible = false;
   this._stage = stageNumber;
+  this._stageConfig = stageConfig || null;
   this._playerCount = playerCount || 1;
   
   var customMap = null;
@@ -244,7 +245,13 @@ Level.prototype._stripSpawns = function (mapText) {
 
 Level.prototype._loadStage = function (stageNumber) {
   var stage;
-  if (stageNumber == 1 && MapStorage.usingCustomMap) {
+  if (this._stageConfig) {
+    stage = {
+      map: this._stageConfig.map,
+      tanks: this._stageConfig.tanks
+    };
+  }
+  else if (stageNumber == 1 && MapStorage.usingCustomMap) {
     var savedTanks = MapStorage.loadTanks();
     stage = {
       map: MapStorage.load(),

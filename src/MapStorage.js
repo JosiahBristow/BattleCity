@@ -139,6 +139,59 @@ MapStorage.loadByName = function (name) {
   return null;
 };
 
+MapStorage.getIndexByName = function (name) {
+  var maps = MapStorage.getMaps();
+  for (var i = 0; i < maps.length; ++i) {
+    if (maps[i].name == name) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+MapStorage.selectByName = function (name) {
+  var index = MapStorage.getIndexByName(name);
+  if (index !== -1) {
+    MapStorage.selectedIndex = index;
+    return true;
+  }
+  return false;
+};
+
+MapStorage.removeByName = function (name) {
+  var index = MapStorage.getIndexByName(name);
+  if (index !== -1) {
+    MapStorage.remove(index);
+    return true;
+  }
+  return false;
+};
+
+MapStorage.updateByName = function (name, mapText, tanks) {
+  var index = MapStorage.getIndexByName(name);
+  var maps = MapStorage.getMaps();
+  if (index !== -1) {
+    maps[index].map = mapText;
+    maps[index].tanks = tanks || null;
+    MapStorage._setMaps(maps);
+    return true;
+  }
+  return false;
+};
+
+MapStorage.saveStage = function (name, mapText, tanks) {
+  if (MapStorage.updateByName(name, mapText, tanks)) {
+    MapStorage.selectByName(name);
+    return name;
+  }
+  var maps = MapStorage.getMaps();
+  maps.push({name: name, map: mapText, tanks: tanks || null});
+  MapStorage._setMaps(maps);
+  MapStorage.selectedIndex = maps.length - 1;
+  MapStorage.currentMap = mapText;
+  return name;
+};
+
 MapStorage.select = function (index) {
   MapStorage.selectedIndex = index;
 };

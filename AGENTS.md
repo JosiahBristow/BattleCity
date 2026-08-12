@@ -7,7 +7,7 @@ Open `index.html` in a browser (a static file server also works). The game loop 
 
 ## Tests
 - Jasmine 1.2.0 (`lib/jasmine-1.2.0/`), specs in `spec/`, one file per source file (`src/Sprite.js` ↔ `spec/SpriteSpec.js`).
-- There is **no SpecRunner.html** in the repo, so tests cannot run out of the box. To run them, create a runner that loads in order: the three lib/jasmine assets, then every `src/*.js` in the exact `<script>` order of `index.html` (dependency order matters), then every `spec/*Spec.js`.
+- A `SpecRunner.html` is provided that loads the three lib/jasmine assets, then every `src/*.js` in the exact `<script>` order of `index.html` (dependency order matters), then every `spec/*Spec.js`. Open it in a browser to run the specs.
 - Specs assume the full global namespace; omitting any src file makes unrelated specs fail.
 
 ## Code conventions

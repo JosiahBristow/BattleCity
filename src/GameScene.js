@@ -1,10 +1,11 @@
-function GameScene(sceneManager, stage, player, playerCount) {
+function GameScene(sceneManager, stage, player, playerCount, stageConfig) {
   var self = this;
   this._sceneManager = sceneManager;
   this._curtain = new Curtain();
   this._stage = stage === undefined ? 1 : stage;
+  this._stageConfig = stageConfig || null;
   this._stageMessage = new StageMessage(this._stage);
-  this._level = new Level(sceneManager, this._stage, player, playerCount);
+  this._level = new Level(sceneManager, this._stage, player, playerCount, this._stageConfig);
   
   this._script = new Script();
   this._script.enqueue({update: function () {

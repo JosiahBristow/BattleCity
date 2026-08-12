@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-  "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head>
-  <title>Battle City</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
-  <link rel="stylesheet" type="text/css" href="css/BattleCity.css" />
-  
+  <title>Battle City Spec Runner</title>
+  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.2.0/jasmine.css" />
+
+  <script type="text/javascript" src="lib/jasmine-1.2.0/jasmine.js"></script>
+  <script type="text/javascript" src="lib/jasmine-1.2.0/jasmine-html.js"></script>
+
   <script type="text/javascript" src="lib/jquery-1.7.2.js"></script>
 
   <script type="text/javascript" src="src/Utils.js"></script>
@@ -131,10 +130,10 @@
   <script type="text/javascript" src="src/Water.js"></script>
   <script type="text/javascript" src="src/Snow.js"></script>
   <script type="text/javascript" src="src/LoadingScene.js"></script>
-  
+
   <script type="text/javascript" src="lib/Stats.js"></script>
   <script type="text/javascript" src="src/FPSCounter.js"></script>
-  
+
   <script type="text/javascript" src="src/ImageManager.js"></script>
   <script type="text/javascript" src="src/SavedMessage.js"></script>
   <script type="text/javascript" src="src/Construction.js"></script>
@@ -144,81 +143,118 @@
   <script type="text/javascript" src="src/SettingsController.js"></script>
   <script type="text/javascript" src="src/mobile-controls.js"></script>
 
+  <script type="text/javascript" src="spec/AdvancedEditorSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/AITankControllerContainerSpec.js"></script>
+  <script type="text/javascript" src="spec/AITankControllerFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/AITankControllerSpec.js"></script>
+  <script type="text/javascript" src="spec/AITeammateControllerSpec.js"></script>
+  <script type="text/javascript" src="spec/AnimationSpec.js"></script>
+  <script type="text/javascript" src="spec/BackMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/BaseExplosionFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/BaseExplosionSpec.js"></script>
+  <script type="text/javascript" src="spec/BaseSpec.js"></script>
+  <script type="text/javascript" src="spec/BaseWallBuilderSpec.js"></script>
+  <script type="text/javascript" src="spec/BrickWallSpec.js"></script>
+  <script type="text/javascript" src="spec/BuilderSpec.js"></script>
+  <script type="text/javascript" src="spec/BulletExplosionFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/BulletFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/BulletSpec.js"></script>
+  <script type="text/javascript" src="spec/CheatMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/CheatSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/CollisionDetectorSpec.js"></script>
+  <script type="text/javascript" src="spec/ConstructionMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/CursorControllerSpec.js"></script>
+  <script type="text/javascript" src="spec/CursorSpec.js"></script>
+  <script type="text/javascript" src="spec/CurtainSpec.js"></script>
+  <script type="text/javascript" src="spec/DelaySpec.js"></script>
+  <script type="text/javascript" src="spec/EditorMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/EditorSpec.js"></script>
+  <script type="text/javascript" src="spec/EnemyFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/EventManagerSpec.js"></script>
+  <script type="text/javascript" src="spec/ExplosionSpec.js"></script>
+  <script type="text/javascript" src="spec/FreezeTimerSpec.js"></script>
+  <script type="text/javascript" src="spec/HelpMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/HelpSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/MainMenuControllerSpec.js"></script>
+  <script type="text/javascript" src="spec/MainMenuSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/MainMenuSpec.js"></script>
+  <script type="text/javascript" src="spec/MapManageSpec.js"></script>
+  <script type="text/javascript" src="spec/MoreMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/MorePlayerAIMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/MoreSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/MoveFnSpec.js"></script>
+  <script type="text/javascript" src="spec/MyMapPlayerAIMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/MyMapPlayerMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/OnePlayerMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/PainterSpec.js"></script>
+  <script type="text/javascript" src="spec/PauseListenerSpec.js"></script>
+  <script type="text/javascript" src="spec/PauseSpec.js"></script>
+  <script type="text/javascript" src="spec/PlayerTankControllerFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/PlayerTankFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/PointsFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/PointSpec.js"></script>
+  <script type="text/javascript" src="spec/PointsSpec.js"></script>
+  <script type="text/javascript" src="spec/PowerUpFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/PowerUpHandlerSpec.js"></script>
+  <script type="text/javascript" src="spec/PowerUpSpec.js"></script>
+  <script type="text/javascript" src="spec/RandomSpec.js"></script>
+  <script type="text/javascript" src="spec/RectSpec.js"></script>
+  <script type="text/javascript" src="spec/SceneManagerSpec.js"></script>
+  <script type="text/javascript" src="spec/ScriptSpec.js"></script>
+  <script type="text/javascript" src="spec/ShovelHandlerSpec.js"></script>
+  <script type="text/javascript" src="spec/SnowSlidingSpec.js"></script>
+  <script type="text/javascript" src="spec/SpriteContainerSpec.js"></script>
+  <script type="text/javascript" src="spec/SpriteControllerSpec.js"></script>
+  <script type="text/javascript" src="spec/SpriteSerializerSpec.js"></script>
+  <script type="text/javascript" src="spec/SpriteSpec.js"></script>
+  <script type="text/javascript" src="spec/StageListMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/StageListSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/StagePlayerAIMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/StageSelectMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/StageSelectSceneSpec.js"></script>
+  <script type="text/javascript" src="spec/SteelWallSpec.js"></script>
+  <script type="text/javascript" src="spec/StructureManagerSpec.js"></script>
+  <script type="text/javascript" src="spec/TankColorSpec.js"></script>
+  <script type="text/javascript" src="spec/TankControllerSpec.js"></script>
+  <script type="text/javascript" src="spec/TankExplosionFactorySpec.js"></script>
+  <script type="text/javascript" src="spec/TankExplosionSpec.js"></script>
+  <script type="text/javascript" src="spec/TankSpec.js"></script>
+  <script type="text/javascript" src="spec/TankStateAppearingSpec.js"></script>
+  <script type="text/javascript" src="spec/TankStateInvincibleSpec.js"></script>
+  <script type="text/javascript" src="spec/TankStateNormalSpec.js"></script>
+  <script type="text/javascript" src="spec/TwoPlayerMenuItemSpec.js"></script>
+  <script type="text/javascript" src="spec/UpdaterSpec.js"></script>
+  <script type="text/javascript" src="spec/UtilsSpec.js"></script>
+  <script type="text/javascript" src="spec/WallSpec.js"></script>
+
   <script type="text/javascript">
-    $(function () {
-      var FPS = 50;
-      
-      var CANVAS_ID = 'canvas';
-      var ctx = createCanvasContext();
-      ctx.font = "bold 16px prstart, zpix, 'Microsoft YaHei', sans-serif"
-      
-      var eventManager = new EventManager();
-      var keyboard = new Keyboard(eventManager);
-      var sceneManager = new SceneManager(eventManager);
-      var settingsController = new SettingsController();
-      sceneManager.toLoadingScene();
-      
-      setInterval(gameLoop, 1000 / FPS);
-      
-      function gameLoop() {
-        keyboard.fireEvents();
-        sceneManager.update();
-        sceneManager.draw(ctx);
-      }
-      
-      function createCanvasContext() {
-        $('<canvas id="' + CANVAS_ID + '" width="' + Globals.CANVAS_WIDTH + '" height="' + Globals.CANVAS_HEIGHT + '"></canvas>').prependTo('#main');
-        var canvas = document.getElementById(CANVAS_ID);
-        return canvas.getContext('2d');
+    (function() {
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var htmlReporter = new jasmine.HtmlReporter();
+
+      jasmineEnv.addReporter(htmlReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+        return htmlReporter.specFilter(spec);
       };
-    });
+
+      var currentWindowOnload = window.onload;
+
+      window.onload = function() {
+        if (currentWindowOnload) {
+          currentWindowOnload();
+        }
+        execJasmine();
+      };
+
+      function execJasmine() {
+        jasmineEnv.execute();
+      }
+    })();
   </script>
-
 </head>
-
 <body>
-  <div id="main">
-    <div id="help">
-      <p data-i18n="CONTROLS">CONTROLS:</p>
-      <table>
-        <tr>
-          <td><img src="images/Nintendo-Dpad-Neutral.png" alt="" /></td>
-          <td data-i18n="ARROWS / WASD">ARROWS / WASD</td>
-        </tr>
-        <tr>
-          <td><img src="images/Nintendo-Button-A.png" alt="" />,<img src="images/Nintendo-Button-B.png" alt="" /></td>
-          <td data-i18n="J / /">J / /</td>
-        </tr>
-        <tr>
-          <td><img src="images/Nintendo-Button-Start.png" alt="" /></td>
-          <td data-i18n="ENTER">ENTER</td>
-        </tr>
-        <tr>
-          <td><img src="images/Nintendo-Button-Select.png" alt="" /></td>
-          <td data-i18n="CTRL">CTRL</td>
-        </tr>
-        <tr>
-          <td data-i18n="P: PAUSE">P: PAUSE</td>
-        </tr>
-        <tr>
-          <td data-i18n="ESC: EXIT">ESC: EXIT</td>
-        </tr>
-        <tr>
-          <td data-i18n="M: MUTE">M: MUTE</td>
-        </tr>
-        <tr>
-          <td data-i18n="F: FULLSCREEN">F: FULLSCREEN</td>
-        </tr>
-        <tr>
-          <td data-i18n="L: LANGUAGE">L: LANGUAGE</td>
-        </tr>
-        <tr>
-          <td data-i18n="S: SAVE MAP">S: SAVE MAP</td>
-        </tr>
-      </table>
-      <p style="margin-top: 10px;" data-i18n="P1: WASD + J">P1: WASD + J</p>
-      <p data-i18n="P2: ARROWS + /">P2: ARROWS + /</p>
-    </div>
-  </div>
 </body>
 </html>

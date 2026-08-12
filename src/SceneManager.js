@@ -31,9 +31,9 @@ SceneManager.prototype.toMainMenuScene = function (arrived) {
   }
 };
 
-SceneManager.prototype.toGameScene = function (stage, player, playerCount) {
+SceneManager.prototype.toGameScene = function (stage, player, playerCount, stageConfig) {
   this._clearScene();
-  this._scene = new GameScene(this, stage, player, playerCount);
+  this._scene = new GameScene(this, stage, player, playerCount, stageConfig);
 };
 
 SceneManager.prototype.toConstructionScene = function () {
@@ -69,6 +69,11 @@ SceneManager.prototype.toMoreScene = function () {
 SceneManager.prototype.toStageSelectScene = function () {
   this._clearScene();
   this._scene = new StageSelectScene(this);
+};
+
+SceneManager.prototype.toStageListScene = function () {
+  this._clearScene();
+  this._scene = new StageListScene(this);
 };
 
 SceneManager.prototype.toStagePlayerScene = function (stage) {
