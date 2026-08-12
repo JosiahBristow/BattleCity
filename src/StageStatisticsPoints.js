@@ -9,6 +9,11 @@ function StageStatisticsPoints(value, count, listener) {
   
   this._script = new Script();
   this._script.enqueue(new Delay(this._script, 15));
+  if (this._count > 0) {
+    this._script.enqueue({execute: function () {
+      SoundManager.play("statistics_1");
+    }});
+  }
   for (var i = 1; i < this._count; ++i) {
     this._script.enqueue({execute: function () {
       self._counter++;
