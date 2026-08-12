@@ -56,7 +56,7 @@ function Level(sceneManager, stageNumber, player, playerCount, stageConfig, demo
   }
   
   if (this._demo) {
-    new DemoTankControllerFactory(this._eventManager);
+    new DemoTankControllerFactory(this._eventManager, 1);
   } else {
     new PlayerTankControllerFactory(this._eventManager, 1, player1KeyMap, Keyboard.Key.J);
   }
